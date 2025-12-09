@@ -59,8 +59,20 @@ export default function ChildrenPage() {
     }
   };
 
-  const handleReset = () => {
-    setRows(prev => prev.map(r => ({ ...r, visited: false })));
+  // ✨ Reset all visited checkboxes and update Firebase
+  const handleReset = async () => {
+    try {
+      const updates = rows.map(async row => {
+        const docRef = doc(db, "children", row.id);
+        await updateDoc(docRef, { visited: false });
+        return { ...row, visited: false };
+      });
+      const newRows = await Promise.all(updates);
+      setRows(newRows);
+    } catch (error) {
+      console.error("خطأ في إعادة الضبط:", error);
+      alert("❌ فشل إعادة ضبط الزيارات");
+    }
   };
 
   const filteredRows = rows.filter(r => r.name.toLowerCase().includes(search.toLowerCase()));
