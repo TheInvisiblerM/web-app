@@ -59,6 +59,10 @@ export default function ChildrenPage() {
     }
   };
 
+  const handleReset = () => {
+    setRows(prev => prev.map(r => ({ ...r, visited: false })));
+  };
+
   const filteredRows = rows.filter(r => r.name.toLowerCase().includes(search.toLowerCase()));
 
   return (
@@ -74,12 +78,20 @@ export default function ChildrenPage() {
             onChange={e => setSearch(e.target.value)}
             className="w-full md:w-1/2 p-2 border rounded-xl"
           />
-          <button
-            onClick={addRow}
-            className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 transition"
-          >
-            ➕ إضافة صف جديد
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={addRow}
+              className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 transition"
+            >
+              ➕ إضافة صف جديد
+            </button>
+            <button
+              onClick={handleReset}
+              className="px-4 py-2 bg-yellow-500 text-white rounded-xl hover:bg-yellow-600 transition"
+            >
+              🔄 إعادة ضبط الزيارات
+            </button>
+          </div>
         </div>
 
         <div className="overflow-x-auto">
