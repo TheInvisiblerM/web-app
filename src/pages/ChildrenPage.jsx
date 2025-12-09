@@ -23,7 +23,7 @@ export default function ChildrenPage() {
   }, []);
 
   const addRow = async () => {
-    const newRow = { name: "", phone: "", dateOfBirth: "" };
+    const newRow = { name: "", phone: "", dateOfBirth: "", visited: false };
     try {
       const docRef = await addDoc(childrenCollection, newRow);
       setRows(prev => [...prev, { id: docRef.id, ...newRow }]);
@@ -82,56 +82,67 @@ export default function ChildrenPage() {
           </button>
         </div>
 
-        <table className="w-full border shadow rounded-xl overflow-hidden text-center">
-          <thead className="bg-red-800 text-white text-lg">
-            <tr>
-              <th className="p-3">#</th>
-              <th className="p-3">اسم الطفل</th>
-              <th className="p-3">رقم الهاتف</th>
-              <th className="p-3">تاريخ الميلاد</th>
-              <th className="p-3">حذف</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredRows.map((row, index) => (
-              <tr key={row.id} className="even:bg-gray-100 text-lg">
-                <td className="p-3">{index + 1}</td>
-                <td className="p-3">
-                  <input
-                    type="text"
-                    value={row.name}
-                    onChange={e => handleChange(row.id, "name", e.target.value)}
-                    className="w-full p-1 border rounded"
-                  />
-                </td>
-                <td className="p-3">
-                  <input
-                    type="text"
-                    value={row.phone}
-                    onChange={e => handleChange(row.id, "phone", e.target.value)}
-                    className="w-full p-1 border rounded"
-                  />
-                </td>
-                <td className="p-3">
-                  <input
-                    type="date"
-                    value={row.dateOfBirth}
-                    onChange={e => handleChange(row.id, "dateOfBirth", e.target.value)}
-                    className="p-1 border rounded"
-                  />
-                </td>
-                <td className="p-3">
-                  <button
-                    onClick={() => handleDelete(row.id)}
-                    className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition"
-                  >
-                    ❌
-                  </button>
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full border shadow rounded-xl overflow-hidden text-center min-w-[600px]">
+            <thead className="bg-red-800 text-white text-lg">
+              <tr>
+                <th className="p-3">#</th>
+                <th className="p-3">اسم الطفل</th>
+                <th className="p-3">رقم الهاتف</th>
+                <th className="p-3">تاريخ الميلاد</th>
+                <th className="p-3">تمت الزيارة ✅</th>
+                <th className="p-3">حذف</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {filteredRows.map((row, index) => (
+                <tr key={row.id} className="even:bg-gray-100 text-lg">
+                  <td className="p-3">{index + 1}</td>
+                  <td className="p-3">
+                    <input
+                      type="text"
+                      value={row.name}
+                      onChange={e => handleChange(row.id, "name", e.target.value)}
+                      className="w-full p-1 border rounded"
+                    />
+                  </td>
+                  <td className="p-3">
+                    <input
+                      type="text"
+                      value={row.phone}
+                      onChange={e => handleChange(row.id, "phone", e.target.value)}
+                      className="w-full p-1 border rounded"
+                    />
+                  </td>
+                  <td className="p-3">
+                    <input
+                      type="date"
+                      value={row.dateOfBirth}
+                      onChange={e => handleChange(row.id, "dateOfBirth", e.target.value)}
+                      className="p-1 border rounded"
+                    />
+                  </td>
+                  <td className="p-3">
+                    <input
+                      type="checkbox"
+                      checked={row.visited || false}
+                      onChange={e => handleChange(row.id, "visited", e.target.checked)}
+                      className="w-6 h-6 md:w-7 md:h-7"
+                    />
+                  </td>
+                  <td className="p-3">
+                    <button
+                      onClick={() => handleDelete(row.id)}
+                      className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition"
+                    >
+                      ❌
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

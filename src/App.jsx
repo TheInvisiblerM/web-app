@@ -1,17 +1,34 @@
-// src/App.jsx
-import React, { useState } from "react";
+<button
+  id="install-btn"
+  onClick={() => window.installPWA()}
+  style={{
+    display: "none",
+    padding: "10px 15px",
+    background: "#007bff",
+    color: "white",
+    border: "none",
+    borderRadius: "8px",
+    marginBottom: "15px",
+    cursor: "pointer",
+    fontSize: "16px"
+  }}
+>
+  تثبيت التطبيق على الجهاز
+</button>
+
+import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Link, Navigate } from "react-router-dom";
 
-// --- UI Components ---
+// UI Components
 import { Card, CardContent } from "./components/ui/card";
 import { Button } from "./components/ui/button";
 
-// --- Firebase Pages ---
+// Pages
 import AttendancePage from "./pages/Attendance";
 import MassPage from "./pages/MassPage";
 import ChildrenPage from "./pages/ChildrenPage";
 
-// --- Auth ---
+// Auth
 const AUTH_USERNAME = "admin";
 const AUTH_PASSWORD = "7813";
 
@@ -20,7 +37,7 @@ function ProtectedRoute({ children }) {
   return isLogged ? children : <Navigate to="/" />;
 }
 
-// --- Login Page ---
+// Login
 function Login() {
   const [user, setUser] = useState("");
   const [pass, setPass] = useState("");
@@ -43,8 +60,8 @@ function Login() {
           <h2 className="text-lg font-semibold text-center mb-4 text-gray-700">تسجيل دخول المسؤول</h2>
           {error && <p className="text-center text-red-600 mb-2">{error}</p>}
           <div className="space-y-3">
-            <input onChange={(e)=>setUser(e.target.value)} placeholder="اسم المستخدم" className="w-full p-3 border rounded-xl"/>
-            <input onChange={(e)=>setPass(e.target.value)} placeholder="كلمة المرور" type="password" className="w-full p-3 border rounded-xl"/>
+            <input onChange={(e) => setUser(e.target.value)} placeholder="اسم المستخدم" className="w-full p-3 border rounded-xl" />
+            <input onChange={(e) => setPass(e.target.value)} placeholder="كلمة المرور" type="password" className="w-full p-3 border rounded-xl" />
           </div>
           <Button className="w-full mt-4" onClick={handleLogin}>تسجيل الدخول</Button>
         </CardContent>
@@ -53,7 +70,7 @@ function Login() {
   );
 }
 
-// --- Dashboard ---
+// Dashboard
 function Dashboard() {
   return (
     <div className="min-h-screen p-6 bg-[url('/church-bg.jpg')] bg-cover bg-center">
@@ -81,10 +98,43 @@ function Dashboard() {
   );
 }
 
-// --- App Router ---
+// Install Button
+function InstallButton() {
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [showButton, setShowButton] = useState(false);
+
+  useEffect(() => {
+    window.addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setShowButton(true);
+    });
+  }, []);
+
+  const handleInstall = () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then((choiceResult) => {
+        setDeferredPrompt(null);
+        setShowButton(false);
+      });
+    }
+  };
+
+  if (!showButton) return null;
+
+  return (
+    <button onClick={handleInstall} className="fixed bottom-4 right-4 px-4 py-2 bg-red-600 text-white rounded-xl shadow-lg">
+      ➕ Install App
+    </button>
+  );
+}
+
+// App
 export default function App() {
   return (
     <Router>
+      <InstallButton />
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
