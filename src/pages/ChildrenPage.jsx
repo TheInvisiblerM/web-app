@@ -102,16 +102,26 @@ export default function ChildrenPage() {
     }
   };
 
+  // إعادة ضبط الزيارات وحفظها مباشرة في Firestore
   const handleReset = async () => {
-    const updatedRows = [];
-    for (const r of rows) {
-      const newVisited = { ...r.visited, [selectedMonth]: false };
-      await debounceUpdate(r.id, "visited", newVisited);
-      updatedRows.push({ ...r, visited: newVisited });
+    try {
+      const updatedRows = await Promise.all(
+        rows.map(async (r) => {
+          const newVisited = { ...r.visited, [selectedMonth]: false };
+          const docRef = doc(db, "children", r.id);
+          await updateDoc(docRef, { visited: newVisited });
+          return { ...r, visited: newVisited };
+        })
+      );
+      setRows(updatedRows);
+      alert("✅ تم إعادة ضبط الزيارات وحفظها بنجاح!");
+    } catch (error) {
+      console.error("خطأ أثناء إعادة ضبط الزيارات:", error);
+      alert("❌ فشل إعادة ضبط الزيارات");
     }
-    setRows(updatedRows);
   };
 
+  // رفع بيانات من ملف Excel
   const handleUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -171,7 +181,7 @@ export default function ChildrenPage() {
             className="p-2 border rounded-xl"
           />
 
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <button
               onClick={addRow}
               className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 transition"
