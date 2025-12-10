@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { db } from "../firebase/firebaseConfig";
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from "firebase/firestore";
 import { debounce } from "lodash";
+import * as XLSX from "xlsx";
 
 export default function ChildrenPage() {
   const [rows, setRows] = useState([]);
@@ -18,6 +19,18 @@ export default function ChildrenPage() {
 
   const childrenCollection = collection(db, "children");
 
+  // تحويل الرقم التسلسلي من Excel لتاريخ yyyy-mm-dd
+  const excelDateToJSDate = (serial) => {
+    if (!serial) return "";
+    const utc_days = Math.floor(serial - 25569);
+    const utc_value = utc_days * 86400;
+    const date_info = new Date(utc_value * 1000);
+    const month = (date_info.getMonth() + 1).toString().padStart(2, "0");
+    const day = date_info.getDate().toString().padStart(2, "0");
+    const year = date_info.getFullYear();
+    return `${year}-${month}-${day}`;
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -26,8 +39,10 @@ export default function ChildrenPage() {
           id: doc.id,
           name: doc.data().name || "",
           phone: doc.data().phone || "",
-          dateOfBirth: doc.data().dateOfBirth || "",
           address: doc.data().address || "",
+          dateOfBirth: doc.data().dateOfBirth || "",
+          stage: doc.data().stage || "",
+          birthCertificate: doc.data().birthCertificate || "",
           visited: doc.data().visited || {}
         }));
         setRows(data);
@@ -40,7 +55,7 @@ export default function ChildrenPage() {
   }, []);
 
   const addRow = async () => {
-    const newRow = { name: "", phone: "", dateOfBirth: "", address: "", visited: {} };
+    const newRow = { name: "", phone: "", address: "", dateOfBirth: "", stage: "", birthCertificate: "", visited: {} };
     try {
       const docRef = await addDoc(childrenCollection, newRow);
       setRows(prev => [...prev, { id: docRef.id, ...newRow }]);
@@ -87,24 +102,50 @@ export default function ChildrenPage() {
     }
   };
 
-  // إعادة ضبط الزيارات بشكل آمن
   const handleReset = async () => {
-    const updatedRows = rows.map(r => ({
-      ...r,
-      visited: { ...r.visited, [selectedMonth]: false }
-    }));
-
-    setRows(updatedRows);
-
-    // تحديث كل الصفوف في Firebase
-    for (const row of updatedRows) {
-      const docRef = doc(db, "children", row.id);
-      try {
-        await updateDoc(docRef, { visited: row.visited });
-      } catch (error) {
-        console.error(`خطأ في تحديث الزيارات للطفل ${row.name}:`, error);
-      }
+    const updatedRows = [];
+    for (const r of rows) {
+      const newVisited = { ...r.visited, [selectedMonth]: false };
+      await debounceUpdate(r.id, "visited", newVisited);
+      updatedRows.push({ ...r, visited: newVisited });
     }
+    setRows(updatedRows);
+  };
+
+  const handleUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (evt) => {
+      const data = new Uint8Array(evt.target.result);
+      const workbook = XLSX.read(data, { type: "array" });
+      const sheetName = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[sheetName];
+      const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+      for (let i = 1; i < jsonData.length; i++) {
+        const row = jsonData[i];
+        if (!row || row.every(cell => cell === undefined || cell === null || cell === "")) continue;
+        const newRow = {
+          name: row[0] || "",
+          phone: row[1] || "",
+          address: row[2] || "",
+          dateOfBirth: typeof row[3] === "number" ? excelDateToJSDate(row[3]) : (row[3] || ""),
+          stage: row[4] || "",
+          birthCertificate: row[5] || "",
+          visited: {}
+        };
+        try {
+          const docRef = await addDoc(childrenCollection, newRow);
+          setRows(prev => [...prev, { id: docRef.id, ...newRow }]);
+        } catch (error) {
+          console.error("خطأ في إضافة البيانات من Excel:", error);
+        }
+      }
+    };
+    reader.readAsArrayBuffer(file);
+    e.target.value = "";
   };
 
   const filteredRows = rows.filter(r => r.name.toLowerCase().includes(search.toLowerCase()));
@@ -137,6 +178,12 @@ export default function ChildrenPage() {
             >
               ➕ إضافة صف جديد
             </button>
+
+            <label className="px-4 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 cursor-pointer transition">
+              ⬆️ Upload Excel
+              <input type="file" accept=".xlsx, .xls" onChange={handleUpload} className="hidden" />
+            </label>
+
             <button
               onClick={handleReset}
               className="px-4 py-2 bg-yellow-500 text-white rounded-xl hover:bg-yellow-600 transition"
@@ -153,8 +200,10 @@ export default function ChildrenPage() {
                 <th className="p-3">#</th>
                 <th className="p-3">اسم الطفل</th>
                 <th className="p-3">رقم الهاتف</th>
-                <th className="p-3">تاريخ الميلاد</th>
                 <th className="p-3">العنوان</th>
+                <th className="p-3">تاريخ الميلاد</th>
+                <th className="p-3">المرحلة</th>
+                <th className="p-3">شهادة الميلاد</th>
                 <th className="p-3">تمت الزيارة ✅</th>
                 <th className="p-3">حذف</th>
               </tr>
@@ -164,6 +213,7 @@ export default function ChildrenPage() {
               {filteredRows.map((row, index) => (
                 <tr key={row.id} className="even:bg-gray-100 text-lg">
                   <td className="p-3">{index + 1}</td>
+
                   <td className="p-3">
                     <input
                       type="text"
@@ -172,6 +222,7 @@ export default function ChildrenPage() {
                       className="w-full p-1 border rounded"
                     />
                   </td>
+
                   <td className="p-3">
                     <input
                       type="text"
@@ -180,14 +231,7 @@ export default function ChildrenPage() {
                       className="w-full p-1 border rounded"
                     />
                   </td>
-                  <td className="p-3">
-                    <input
-                      type="date"
-                      value={row.dateOfBirth}
-                      onChange={e => handleChange(row.id, "dateOfBirth", e.target.value)}
-                      className="p-1 border rounded"
-                    />
-                  </td>
+
                   <td className="p-3">
                     <input
                       type="text"
@@ -196,6 +240,34 @@ export default function ChildrenPage() {
                       className="w-full p-1 border rounded"
                     />
                   </td>
+
+                  <td className="p-3">
+                    <input
+                      type="text"
+                      value={row.dateOfBirth}
+                      onChange={e => handleChange(row.id, "dateOfBirth", e.target.value)}
+                      className="w-full p-1 border rounded"
+                    />
+                  </td>
+
+                  <td className="p-3">
+                    <input
+                      type="text"
+                      value={row.stage}
+                      onChange={e => handleChange(row.id, "stage", e.target.value)}
+                      className="w-full p-1 border rounded"
+                    />
+                  </td>
+
+                  <td className="p-3">
+                    <input
+                      type="text"
+                      value={row.birthCertificate}
+                      onChange={e => handleChange(row.id, "birthCertificate", e.target.value)}
+                      className="w-full p-1 border rounded"
+                    />
+                  </td>
+
                   <td className="p-3">
                     <input
                       type="checkbox"
@@ -204,6 +276,7 @@ export default function ChildrenPage() {
                       className="w-6 h-6 md:w-7 md:h-7"
                     />
                   </td>
+
                   <td className="p-3">
                     <button
                       onClick={() => handleDelete(row.id)}
@@ -212,10 +285,10 @@ export default function ChildrenPage() {
                       ❌
                     </button>
                   </td>
+
                 </tr>
               ))}
             </tbody>
-
           </table>
         </div>
       </div>
