@@ -96,14 +96,14 @@ export default function MassPage() {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-4">
           <input
             type="text"
-            placeholder="ابحث عن اسم الطفل..."
+            placeholder="ابحث باسم الطفل..."
             value={search}
             onChange={e => setSearch(e.target.value)}
             className="w-full md:w-1/4 p-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
           />
           <input
             type="text"
-            placeholder="اضافة اسم الطفل..."
+            placeholder="اسم الطفل الجديد..."
             value={newChildName}
             onChange={(e) => setNewChildName(e.target.value)}
             className="w-full md:w-1/4 p-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500"
@@ -169,4 +169,3 @@ export default function MassPage() {
     </div>
   );
 }
-
