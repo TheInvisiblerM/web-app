@@ -8,7 +8,6 @@ import * as XLSX from "xlsx";
 export default function ChildrenPage() {
   const [rows, setRows] = useState([]);
   const [search, setSearch] = useState("");
-
   const [selectedMonth, setSelectedMonth] = useState(() => {
     const now = new Date();
     const month = (now.getMonth() + 1).toString().padStart(2, "0");
@@ -153,6 +152,7 @@ export default function ChildrenPage() {
       <div className="backdrop-blur-md bg-white/80 p-6 rounded-2xl shadow-xl">
         <h1 className="text-3xl font-bold mb-4 text-center text-red-900">👼 إدارة بيانات الأطفال</h1>
 
+        {/* أدوات البحث والشهر والأزرار */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-2 flex-wrap">
           <input
             type="text"
@@ -169,28 +169,29 @@ export default function ChildrenPage() {
             className="p-2 border rounded-xl"
           />
 
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-2 flex-wrap justify-end">
             <button
               onClick={addRow}
-              className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 transition"
+              className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 transition text-sm md:text-base"
             >
               ➕ إضافة صف جديد
             </button>
 
-            <label className="px-4 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 cursor-pointer transition">
+            <label className="px-4 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 cursor-pointer transition text-sm md:text-base">
               ⬆️ Upload Excel
               <input type="file" accept=".xlsx, .xls" onChange={handleUpload} className="hidden" />
             </label>
 
             <button
               onClick={handleReset}
-              className="px-4 py-2 bg-yellow-500 text-white rounded-xl hover:bg-yellow-600 transition"
+              className="px-4 py-2 bg-yellow-500 text-white rounded-xl hover:bg-yellow-600 transition text-sm md:text-base"
             >
               🔄 إعادة ضبط الزيارات
             </button>
           </div>
         </div>
 
+        {/* الجدول */}
         <div className="overflow-x-auto">
           <table className="w-full border shadow rounded-xl overflow-hidden text-center min-w-[700px]">
             <thead className="bg-red-800 text-white text-lg">
@@ -211,79 +212,20 @@ export default function ChildrenPage() {
               {filteredRows.map((row, index) => (
                 <tr key={row.id} className="even:bg-gray-100 text-lg">
                   <td className="p-3">{index + 1}</td>
-
+                  <td className="p-3"><input type="text" value={row.name} onChange={e => handleChange(row.id, "name", e.target.value)} className="w-full p-1 border rounded" /></td>
+                  <td className="p-3"><input type="text" value={row.phone} onChange={e => handleChange(row.id, "phone", e.target.value)} className="w-full p-1 border rounded" /></td>
+                  <td className="p-3"><input type="text" value={row.address} onChange={e => handleChange(row.id, "address", e.target.value)} className="w-full p-1 border rounded" /></td>
+                  <td className="p-3"><input type="text" value={row.dateOfBirth} onChange={e => handleChange(row.id, "dateOfBirth", e.target.value)} className="w-full p-1 border rounded" /></td>
+                  <td className="p-3"><input type="text" value={row.stage} onChange={e => handleChange(row.id, "stage", e.target.value)} className="w-full p-1 border rounded" /></td>
+                  <td className="p-3"><input type="text" value={row.birthCertificate} onChange={e => handleChange(row.id, "birthCertificate", e.target.value)} className="w-full p-1 border rounded" /></td>
                   <td className="p-3">
-                    <input
-                      type="text"
-                      value={row.name}
-                      onChange={e => handleChange(row.id, "name", e.target.value)}
-                      className="w-full p-1 border rounded"
-                    />
+                    <input type="checkbox" checked={row.visited[selectedMonth] || false} onChange={e => handleChange(row.id, "visited", e.target.checked)} className="w-6 h-6 md:w-7 md:h-7" />
                   </td>
-
                   <td className="p-3">
-                    <input
-                      type="text"
-                      value={row.phone}
-                      onChange={e => handleChange(row.id, "phone", e.target.value)}
-                      className="w-full p-1 border rounded"
-                    />
-                  </td>
-
-                  <td className="p-3">
-                    <input
-                      type="text"
-                      value={row.address}
-                      onChange={e => handleChange(row.id, "address", e.target.value)}
-                      className="w-full p-1 border rounded"
-                    />
-                  </td>
-
-                  <td className="p-3">
-                    <input
-                      type="text"
-                      value={row.dateOfBirth}
-                      onChange={e => handleChange(row.id, "dateOfBirth", e.target.value)}
-                      className="w-full p-1 border rounded"
-                    />
-                  </td>
-
-                  <td className="p-3">
-                    <input
-                      type="text"
-                      value={row.stage}
-                      onChange={e => handleChange(row.id, "stage", e.target.value)}
-                      className="w-full p-1 border rounded"
-                    />
-                  </td>
-
-                  <td className="p-3">
-                    <input
-                      type="text"
-                      value={row.birthCertificate}
-                      onChange={e => handleChange(row.id, "birthCertificate", e.target.value)}
-                      className="w-full p-1 border rounded"
-                    />
-                  </td>
-
-                  <td className="p-3">
-                    <input
-                      type="checkbox"
-                      checked={row.visited[selectedMonth] || false}
-                      onChange={e => handleChange(row.id, "visited", e.target.checked)}
-                      className="w-6 h-6 md:w-7 md:h-7"
-                    />
-                  </td>
-
-                  <td className="p-3">
-                    <button
-                      onClick={() => handleDelete(row.id)}
-                      className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition"
-                    >
+                    <button onClick={() => handleDelete(row.id)} className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition">
                       ❌
                     </button>
                   </td>
-
                 </tr>
               ))}
             </tbody>
