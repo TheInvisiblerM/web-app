@@ -79,7 +79,7 @@ function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card className="p-4 rounded-2xl shadow-xl hover:shadow-2xl transition bg-white/80 backdrop-blur-md">
             <CardContent>
-              <Link to="/attendance" className="block text-xl font-semibold text-center">📘 تسجيل الحضور والغياب</Link>
+              <Link to="/attendance" className="block text-xl font-semibold text-center">📘 تسجيل حضور مدارس الاحد</Link>
             </CardContent>
           </Card>
           <Card className="p-4 rounded-2xl shadow-xl hover:shadow-2xl transition bg-white/80 backdrop-blur-md">
