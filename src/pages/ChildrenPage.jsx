@@ -99,14 +99,26 @@ export default function ChildrenPage() {
     }
   };
 
+  // =====================
+  // إعادة ضبط الزيارات مع الحفظ الفعلي في Firebase
+  // =====================
   const handleReset = async () => {
-    const updatedRows = [];
-    for (const r of rows) {
-      const newVisited = { ...r.visited, [selectedMonth]: false };
-      await debounceUpdate(r.id, "visited", newVisited);
-      updatedRows.push({ ...r, visited: newVisited });
+    if (!window.confirm("هل أنت متأكد من إعادة ضبط الزيارات لهذا الشهر؟")) return;
+
+    try {
+      const updatedRows = [];
+      for (const r of rows) {
+        const newVisited = { ...r.visited, [selectedMonth]: false };
+        const docRef = doc(db, "children", r.id);
+        await updateDoc(docRef, { visited: newVisited });
+        updatedRows.push({ ...r, visited: newVisited });
+      }
+      setRows(updatedRows);
+      alert("✅ تم إعادة ضبط الزيارات وحفظها بنجاح!");
+    } catch (error) {
+      console.error("خطأ في إعادة ضبط الزيارات:", error);
+      alert("❌ حدث خطأ أثناء إعادة ضبط الزيارات");
     }
-    setRows(updatedRows);
   };
 
   const handleUpload = async (e) => {
