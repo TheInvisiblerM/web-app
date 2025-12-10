@@ -85,7 +85,7 @@ export default function ChildrenPage() {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-4">
           <input
             type="text"
-            placeholder="🔍 ابحث باسم الطفل..."
+            placeholder="🔍 ابحث عن اسم الطفل..."
             value={search}
             onChange={e => setSearch(e.target.value)}
             className="w-full md:w-1/2 p-2 border rounded-xl"
@@ -171,3 +171,4 @@ export default function ChildrenPage() {
     </div>
   );
 }
+
