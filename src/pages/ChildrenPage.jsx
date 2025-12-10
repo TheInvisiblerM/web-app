@@ -7,13 +7,30 @@ import { debounce } from "lodash";
 export default function ChildrenPage() {
   const [rows, setRows] = useState([]);
   const [search, setSearch] = useState("");
+
+  // الشهر الحالي تلقائي
+  const [selectedMonth, setSelectedMonth] = useState(() => {
+    const now = new Date();
+    const month = (now.getMonth() + 1).toString().padStart(2, "0");
+    const year = now.getFullYear();
+    return `${year}-${month}`;
+  });
+
   const childrenCollection = collection(db, "children");
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const snapshot = await getDocs(childrenCollection);
-        setRows(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        const data = snapshot.docs.map(doc => ({
+          id: doc.id,
+          name: doc.data().name || "",
+          phone: doc.data().phone || "",
+          dateOfBirth: doc.data().dateOfBirth || "",
+          address: doc.data().address || "",
+          visited: doc.data().visited || {}
+        }));
+        setRows(data);
       } catch (error) {
         console.error("خطأ في جلب البيانات:", error);
         alert("❌ فشل تحميل البيانات");
@@ -23,7 +40,7 @@ export default function ChildrenPage() {
   }, []);
 
   const addRow = async () => {
-    const newRow = { name: "", phone: "", dateOfBirth: "", address: "", visited: false };
+    const newRow = { name: "", phone: "", dateOfBirth: "", address: "", visited: {} };
     try {
       const docRef = await addDoc(childrenCollection, newRow);
       setRows(prev => [...prev, { id: docRef.id, ...newRow }]);
@@ -44,8 +61,19 @@ export default function ChildrenPage() {
   }, 500);
 
   const handleChange = (id, field, value) => {
-    setRows(prev => prev.map(r => r.id === id ? { ...r, [field]: value } : r));
-    debounceUpdate(id, field, value);
+    setRows(prev => prev.map(r => {
+      if (r.id === id) {
+        if (field === "visited") {
+          const newVisited = { ...r.visited, [selectedMonth]: value };
+          debounceUpdate(id, "visited", newVisited);
+          return { ...r, visited: newVisited };
+        } else {
+          debounceUpdate(id, field, value);
+          return { ...r, [field]: value };
+        }
+      }
+      return r;
+    }));
   };
 
   const handleDelete = async (id) => {
@@ -59,8 +87,24 @@ export default function ChildrenPage() {
     }
   };
 
-  const handleReset = () => {
-    setRows(prev => prev.map(r => ({ ...r, visited: false })));
+  // إعادة ضبط الزيارات بشكل آمن
+  const handleReset = async () => {
+    const updatedRows = rows.map(r => ({
+      ...r,
+      visited: { ...r.visited, [selectedMonth]: false }
+    }));
+
+    setRows(updatedRows);
+
+    // تحديث كل الصفوف في Firebase
+    for (const row of updatedRows) {
+      const docRef = doc(db, "children", row.id);
+      try {
+        await updateDoc(docRef, { visited: row.visited });
+      } catch (error) {
+        console.error(`خطأ في تحديث الزيارات للطفل ${row.name}:`, error);
+      }
+    }
   };
 
   const filteredRows = rows.filter(r => r.name.toLowerCase().includes(search.toLowerCase()));
@@ -78,6 +122,14 @@ export default function ChildrenPage() {
             onChange={e => setSearch(e.target.value)}
             className="w-full md:w-1/2 p-2 border rounded-xl"
           />
+
+          <input
+            type="month"
+            value={selectedMonth}
+            onChange={e => setSelectedMonth(e.target.value)}
+            className="p-2 border rounded-xl"
+          />
+
           <div className="flex gap-2">
             <button
               onClick={addRow}
@@ -112,7 +164,6 @@ export default function ChildrenPage() {
               {filteredRows.map((row, index) => (
                 <tr key={row.id} className="even:bg-gray-100 text-lg">
                   <td className="p-3">{index + 1}</td>
-
                   <td className="p-3">
                     <input
                       type="text"
@@ -121,7 +172,6 @@ export default function ChildrenPage() {
                       className="w-full p-1 border rounded"
                     />
                   </td>
-
                   <td className="p-3">
                     <input
                       type="text"
@@ -130,7 +180,6 @@ export default function ChildrenPage() {
                       className="w-full p-1 border rounded"
                     />
                   </td>
-
                   <td className="p-3">
                     <input
                       type="date"
@@ -139,26 +188,22 @@ export default function ChildrenPage() {
                       className="p-1 border rounded"
                     />
                   </td>
-
-                  {/* ⬅️ خانة العنوان الجديدة */}
                   <td className="p-3">
                     <input
                       type="text"
-                      value={row.address || ""}
+                      value={row.address}
                       onChange={e => handleChange(row.id, "address", e.target.value)}
                       className="w-full p-1 border rounded"
                     />
                   </td>
-
                   <td className="p-3">
                     <input
                       type="checkbox"
-                      checked={row.visited || false}
+                      checked={row.visited[selectedMonth] || false}
                       onChange={e => handleChange(row.id, "visited", e.target.checked)}
                       className="w-6 h-6 md:w-7 md:h-7"
                     />
                   </td>
-
                   <td className="p-3">
                     <button
                       onClick={() => handleDelete(row.id)}
@@ -167,7 +212,6 @@ export default function ChildrenPage() {
                       ❌
                     </button>
                   </td>
-
                 </tr>
               ))}
             </tbody>
