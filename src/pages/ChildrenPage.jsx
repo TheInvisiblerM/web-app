@@ -152,7 +152,7 @@ export default function ChildrenPage() {
       <div className="backdrop-blur-md bg-white/80 p-6 rounded-2xl shadow-xl">
         <h1 className="text-3xl font-bold mb-4 text-center text-red-900">👼 إدارة بيانات الأطفال</h1>
 
-        {/* أدوات البحث والشهر والأزرار */}
+        {/* أدوات البحث والشهر والأزرار - صف واحد منظم */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-2 flex-wrap">
           <input
             type="text"
@@ -162,14 +162,14 @@ export default function ChildrenPage() {
             className="w-full md:w-1/2 p-2 border rounded-xl"
           />
 
-          <input
-            type="month"
-            value={selectedMonth}
-            onChange={e => setSelectedMonth(e.target.value)}
-            className="p-2 border rounded-xl"
-          />
+          <div className="flex gap-2 flex-wrap items-center justify-end">
+            <input
+              type="month"
+              value={selectedMonth}
+              onChange={e => setSelectedMonth(e.target.value)}
+              className="p-2 border rounded-xl"
+            />
 
-          <div className="flex gap-2 flex-wrap justify-end">
             <button
               onClick={addRow}
               className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 transition text-sm md:text-base"
