@@ -99,26 +99,14 @@ export default function ChildrenPage() {
     }
   };
 
-  // =====================
-  // إعادة ضبط الزيارات مع الحفظ الفعلي في Firebase
-  // =====================
   const handleReset = async () => {
-    if (!window.confirm("هل أنت متأكد من إعادة ضبط الزيارات لهذا الشهر؟")) return;
-
-    try {
-      const updatedRows = [];
-      for (const r of rows) {
-        const newVisited = { ...r.visited, [selectedMonth]: false };
-        const docRef = doc(db, "children", r.id);
-        await updateDoc(docRef, { visited: newVisited });
-        updatedRows.push({ ...r, visited: newVisited });
-      }
-      setRows(updatedRows);
-      alert("✅ تم إعادة ضبط الزيارات وحفظها بنجاح!");
-    } catch (error) {
-      console.error("خطأ في إعادة ضبط الزيارات:", error);
-      alert("❌ حدث خطأ أثناء إعادة ضبط الزيارات");
+    const updatedRows = [];
+    for (const r of rows) {
+      const newVisited = { ...r.visited, [selectedMonth]: false };
+      await debounceUpdate(r.id, "visited", newVisited);
+      updatedRows.push({ ...r, visited: newVisited });
     }
+    setRows(updatedRows);
   };
 
   const handleUpload = async (e) => {
@@ -164,7 +152,7 @@ export default function ChildrenPage() {
       <div className="backdrop-blur-md bg-white/80 p-6 rounded-2xl shadow-xl">
         <h1 className="text-3xl font-bold mb-4 text-center text-red-900">👼 إدارة بيانات الأطفال</h1>
 
-        {/* أدوات البحث والشهر والأزرار - صف واحد منظم */}
+        {/* أدوات البحث والشهر والأزرار */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-2 flex-wrap">
           <input
             type="text"
@@ -174,14 +162,14 @@ export default function ChildrenPage() {
             className="w-full md:w-1/2 p-2 border rounded-xl"
           />
 
-          <div className="flex gap-2 flex-wrap items-center justify-end">
-            <input
-              type="month"
-              value={selectedMonth}
-              onChange={e => setSelectedMonth(e.target.value)}
-              className="p-2 border rounded-xl"
-            />
+          <input
+            type="month"
+            value={selectedMonth}
+            onChange={e => setSelectedMonth(e.target.value)}
+            className="p-2 border rounded-xl"
+          />
 
+          <div className="flex gap-2 flex-wrap justify-end">
             <button
               onClick={addRow}
               className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 transition text-sm md:text-base"
@@ -247,3 +235,4 @@ export default function ChildrenPage() {
     </div>
   );
 }
+
