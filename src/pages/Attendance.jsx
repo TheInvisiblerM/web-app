@@ -1,7 +1,7 @@
 // src/pages/Attendance.jsx
 import React, { useState, useEffect } from "react";
 import { db } from "../firebase/firebaseConfig";
-import { collection, getDocs, doc, setDoc, updateDoc, deleteDoc, addDoc } from "firebase/firestore";
+import { collection, getDocs, doc, setDoc, updateDoc, deleteDoc } from "firebase/firestore";
 import { debounce } from "lodash";
 import * as XLSX from "xlsx";
 
@@ -112,14 +112,19 @@ export default function AttendancePage() {
 
       for (let i = 1; i < jsonData.length; i++) {
         const row = jsonData[i];
-        if (!row || row.every(cell => cell === undefined || cell === null || cell === "")) continue;
-        const newRow = { name: row[0] || "", days: {} };
+        if (!row || row.every(cell => !cell)) continue;
+        const name = row[0] || "";
+        if (!name) continue;
+
+        const childId = name.replace(/\s+/g, "_") + "_" + Date.now();
+        const newChild = { name, days: {} };
+
         try {
-          const docRef = doc(db, "attendance", newRow.name.replace(/\s+/g, "_") + "_" + Date.now());
-          await setDoc(docRef, newRow);
-          setChildren(prev => [...prev, { id: docRef.id, ...newRow }]);
+          const docRef = doc(db, "attendance", childId);
+          await setDoc(docRef, newChild);
+          setChildren(prev => [...prev, { id: childId, name, days: {} }]);
         } catch (error) {
-          console.error("خطأ في إضافة البيانات من Excel:", error);
+          console.error("خطأ في إضافة الاسم من Excel:", error);
         }
       }
     };
@@ -127,61 +132,50 @@ export default function AttendancePage() {
     e.target.value = "";
   };
 
-  const filteredChildren = children.filter(c =>
-    c.name.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredChildren = children
+    .filter(c => c.name.toLowerCase().includes(search.toLowerCase()))
+    .sort((a, b) => a.name.localeCompare(b.name, "ar"));
 
   return (
     <div className="min-h-screen p-6 bg-[url('/church-bg.jpg')] bg-cover bg-center bg-fixed">
       <div className="backdrop-blur-md bg-white/90 p-6 rounded-2xl shadow-xl">
-        <h1 className="text-3xl font-bold mb-4 text-center text-red-900">📘 حضور الأطفال لمدارس الأحد</h1>
+        <h1 className="text-2xl md:text-3xl font-semibold mb-4 text-center text-red-900">📘 حضور الأطفال لمدارس الأحد</h1>
 
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-2 flex-wrap">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
           <input
             type="text"
-            placeholder="🔍 ابحث عن اسم الطفل..."
+            placeholder="ابحث عن اسم الطفل..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="w-full md:w-1/2 p-2 border rounded-xl"
+            className="p-2 border rounded-xl w-full md:w-auto flex-grow"
           />
-
-          <div className="flex gap-2 flex-wrap items-center justify-end">
-            <input
-              type="date"
-              value={selectedDate}
-              onChange={e => setSelectedDate(e.target.value)}
-              className="p-2 border rounded-xl"
-            />
-            <input
-              type="text"
-              placeholder="اضافة اسم الطفل..."
-              value={newChildName}
-              onChange={(e) => setNewChildName(e.target.value)}
-              className="p-2 border rounded-xl"
-            />
-            <button
-              onClick={addChild}
-              className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 transition text-sm md:text-base"
-            >
-              ➕ إضافة طفل
-            </button>
-
-            <label className="px-4 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 cursor-pointer transition text-sm md:text-base">
-              ⬆️ Upload Excel
-              <input type="file" accept=".xlsx, .xls" onChange={handleUpload} className="hidden" />
-            </label>
-
-            <button
-              onClick={resetAttendance}
-              className="px-4 py-2 bg-yellow-500 text-white rounded-xl hover:bg-yellow-600 transition text-sm md:text-base"
-            >
-              🔄 إعادة ضبط الحضور
-            </button>
-          </div>
+          <input
+            type="date"
+            value={selectedDate}
+            onChange={e => setSelectedDate(e.target.value)}
+            className="p-2 border rounded-xl w-full md:w-auto"
+          />
+          <input
+            type="text"
+            placeholder="اضافة اسم الطفل..."
+            value={newChildName}
+            onChange={e => setNewChildName(e.target.value)}
+            className="p-2 border rounded-xl w-full md:w-auto"
+          />
+          <button onClick={addChild} className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 transition">
+            ➕ إضافة طفل
+          </button>
+          <label className="px-4 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 cursor-pointer transition">
+            ⬆️ Upload Excel
+            <input type="file" accept=".xlsx, .xls" onChange={handleUpload} className="hidden" />
+          </label>
+          <button onClick={resetAttendance} className="px-4 py-2 bg-yellow-500 text-white rounded-xl hover:bg-yellow-600 transition">
+            🔄 إعادة ضبط الحضور
+          </button>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full border shadow rounded-xl overflow-hidden text-center min-w-[500px]">
+          <table className="w-full border shadow rounded-xl text-center min-w-[500px]">
             <thead className="bg-red-800 text-white text-lg sticky top-0">
               <tr>
                 <th className="p-3 w-12">#</th>
