@@ -93,14 +93,14 @@ export default function AttendancePage() {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-4">
           <input
             type="text"
-            placeholder="ابحث باسم الطفل..."
+            placeholder="ابحث عن اسم الطفل..."
             value={search}
             onChange={e => setSearch(e.target.value)}
             className="w-full md:w-1/4 p-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
           />
           <input
             type="text"
-            placeholder="اسم الطفل الجديد..."
+            placeholder="اضافة اسم الطفل..."
             value={newChildName}
             onChange={(e) => setNewChildName(e.target.value)}
             className="w-full md:w-1/4 p-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500"
@@ -166,3 +166,4 @@ export default function AttendancePage() {
     </div>
   );
 }
+
