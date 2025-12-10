@@ -145,31 +145,33 @@ export default function ChildrenPage() {
     e.target.value = "";
   };
 
-  const filteredRows = rows.filter(r => r.name.toLowerCase().includes(search.toLowerCase()));
+  const filteredRows = rows
+    .filter(r => r.name.toLowerCase().includes(search.toLowerCase()))
+    .sort((a, b) => a.name.localeCompare(b.name, "ar")); // ترتيب أبجدي
 
   return (
     <div className="min-h-screen p-6 bg-[url('/church-bg.jpg')] bg-cover bg-center bg-fixed">
       <div className="backdrop-blur-md bg-white/80 p-6 rounded-2xl shadow-xl">
         <h1 className="text-3xl font-bold mb-4 text-center text-red-900">👼 إدارة بيانات الأطفال</h1>
 
-        {/* أدوات البحث والشهر والأزرار */}
+        {/* أدوات البحث والشهر والأزرار مرتبة جنب بعض */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-2 flex-wrap">
           <input
             type="text"
             placeholder="🔍 ابحث عن اسم الطفل..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="w-full md:w-1/2 p-2 border rounded-xl"
+            className="w-full md:w-1/4 p-2 border rounded-xl"
           />
 
           <input
             type="month"
             value={selectedMonth}
             onChange={e => setSelectedMonth(e.target.value)}
-            className="p-2 border rounded-xl"
+            className="w-full md:w-1/4 p-2 border rounded-xl"
           />
 
-          <div className="flex gap-2 flex-wrap justify-end">
+          <div className="flex gap-2 flex-wrap items-center">
             <button
               onClick={addRow}
               className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 transition text-sm md:text-base"
@@ -235,4 +237,3 @@ export default function ChildrenPage() {
     </div>
   );
 }
-
