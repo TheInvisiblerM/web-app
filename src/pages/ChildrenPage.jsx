@@ -23,7 +23,7 @@ export default function ChildrenPage() {
   }, []);
 
   const addRow = async () => {
-    const newRow = { name: "", phone: "", dateOfBirth: "", visited: false };
+    const newRow = { name: "", phone: "", dateOfBirth: "", address: "", visited: false };
     try {
       const docRef = await addDoc(childrenCollection, newRow);
       setRows(prev => [...prev, { id: docRef.id, ...newRow }]);
@@ -59,20 +59,8 @@ export default function ChildrenPage() {
     }
   };
 
-  // ✨ Reset all visited checkboxes and update Firebase
-  const handleReset = async () => {
-    try {
-      const updates = rows.map(async row => {
-        const docRef = doc(db, "children", row.id);
-        await updateDoc(docRef, { visited: false });
-        return { ...row, visited: false };
-      });
-      const newRows = await Promise.all(updates);
-      setRows(newRows);
-    } catch (error) {
-      console.error("خطأ في إعادة الضبط:", error);
-      alert("❌ فشل إعادة ضبط الزيارات");
-    }
+  const handleReset = () => {
+    setRows(prev => prev.map(r => ({ ...r, visited: false })));
   };
 
   const filteredRows = rows.filter(r => r.name.toLowerCase().includes(search.toLowerCase()));
@@ -107,21 +95,24 @@ export default function ChildrenPage() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full border shadow rounded-xl overflow-hidden text-center min-w-[600px]">
+          <table className="w-full border shadow rounded-xl overflow-hidden text-center min-w-[700px]">
             <thead className="bg-red-800 text-white text-lg">
               <tr>
                 <th className="p-3">#</th>
                 <th className="p-3">اسم الطفل</th>
                 <th className="p-3">رقم الهاتف</th>
                 <th className="p-3">تاريخ الميلاد</th>
+                <th className="p-3">العنوان</th>
                 <th className="p-3">تمت الزيارة ✅</th>
                 <th className="p-3">حذف</th>
               </tr>
             </thead>
+
             <tbody>
               {filteredRows.map((row, index) => (
                 <tr key={row.id} className="even:bg-gray-100 text-lg">
                   <td className="p-3">{index + 1}</td>
+
                   <td className="p-3">
                     <input
                       type="text"
@@ -130,6 +121,7 @@ export default function ChildrenPage() {
                       className="w-full p-1 border rounded"
                     />
                   </td>
+
                   <td className="p-3">
                     <input
                       type="text"
@@ -138,6 +130,7 @@ export default function ChildrenPage() {
                       className="w-full p-1 border rounded"
                     />
                   </td>
+
                   <td className="p-3">
                     <input
                       type="date"
@@ -146,6 +139,17 @@ export default function ChildrenPage() {
                       className="p-1 border rounded"
                     />
                   </td>
+
+                  {/* ⬅️ خانة العنوان الجديدة */}
+                  <td className="p-3">
+                    <input
+                      type="text"
+                      value={row.address || ""}
+                      onChange={e => handleChange(row.id, "address", e.target.value)}
+                      className="w-full p-1 border rounded"
+                    />
+                  </td>
+
                   <td className="p-3">
                     <input
                       type="checkbox"
@@ -154,6 +158,7 @@ export default function ChildrenPage() {
                       className="w-6 h-6 md:w-7 md:h-7"
                     />
                   </td>
+
                   <td className="p-3">
                     <button
                       onClick={() => handleDelete(row.id)}
@@ -162,13 +167,14 @@ export default function ChildrenPage() {
                       ❌
                     </button>
                   </td>
+
                 </tr>
               ))}
             </tbody>
+
           </table>
         </div>
       </div>
     </div>
   );
 }
-
