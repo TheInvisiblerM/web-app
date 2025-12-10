@@ -29,8 +29,8 @@ import MassPage from "./pages/MassPage";
 import ChildrenPage from "./pages/ChildrenPage";
 
 // Auth
-const AUTH_USERNAME = "ملايكة";
-const AUTH_PASSWORD = "1234";
+const AUTH_USERNAME = "ملايكاوي";
+const AUTH_PASSWORD = "12345";
 
 function ProtectedRoute({ children }) {
   const isLogged = localStorage.getItem("logged") === "true";
