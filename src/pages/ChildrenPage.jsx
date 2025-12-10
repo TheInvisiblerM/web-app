@@ -9,7 +9,6 @@ export default function ChildrenPage() {
   const [rows, setRows] = useState([]);
   const [search, setSearch] = useState("");
 
-  // الشهر الحالي تلقائي
   const [selectedMonth, setSelectedMonth] = useState(() => {
     const now = new Date();
     const month = (now.getMonth() + 1).toString().padStart(2, "0");
@@ -19,7 +18,6 @@ export default function ChildrenPage() {
 
   const childrenCollection = collection(db, "children");
 
-  // تحويل الرقم التسلسلي من Excel لتاريخ yyyy-mm-dd
   const excelDateToJSDate = (serial) => {
     if (!serial) return "";
     const utc_days = Math.floor(serial - 25569);
@@ -102,26 +100,16 @@ export default function ChildrenPage() {
     }
   };
 
-  // إعادة ضبط الزيارات وحفظها مباشرة في Firestore
   const handleReset = async () => {
-    try {
-      const updatedRows = await Promise.all(
-        rows.map(async (r) => {
-          const newVisited = { ...r.visited, [selectedMonth]: false };
-          const docRef = doc(db, "children", r.id);
-          await updateDoc(docRef, { visited: newVisited });
-          return { ...r, visited: newVisited };
-        })
-      );
-      setRows(updatedRows);
-      alert("✅ تم إعادة ضبط الزيارات وحفظها بنجاح!");
-    } catch (error) {
-      console.error("خطأ أثناء إعادة ضبط الزيارات:", error);
-      alert("❌ فشل إعادة ضبط الزيارات");
+    const updatedRows = [];
+    for (const r of rows) {
+      const newVisited = { ...r.visited, [selectedMonth]: false };
+      await debounceUpdate(r.id, "visited", newVisited);
+      updatedRows.push({ ...r, visited: newVisited });
     }
+    setRows(updatedRows);
   };
 
-  // رفع بيانات من ملف Excel
   const handleUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -165,7 +153,7 @@ export default function ChildrenPage() {
       <div className="backdrop-blur-md bg-white/80 p-6 rounded-2xl shadow-xl">
         <h1 className="text-3xl font-bold mb-4 text-center text-red-900">👼 إدارة بيانات الأطفال</h1>
 
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-4">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-2 flex-wrap">
           <input
             type="text"
             placeholder="🔍 ابحث عن اسم الطفل..."
@@ -181,7 +169,7 @@ export default function ChildrenPage() {
             className="p-2 border rounded-xl"
           />
 
-          <div className="flex flex-wrap gap-2">
+          <div className="flex gap-2 flex-wrap">
             <button
               onClick={addRow}
               className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 transition"
