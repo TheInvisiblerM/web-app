@@ -1,5 +1,5 @@
 // src/pages/Attendance.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { db } from "../firebase/firebaseConfig";
 import { collection, getDocs, doc, setDoc, updateDoc, deleteDoc } from "firebase/firestore";
 import { debounce } from "lodash";
@@ -10,6 +10,9 @@ export default function AttendancePage() {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0]);
   const [newChildName, setNewChildName] = useState("");
   const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const rowsPerPage = 20;
+
   const attendanceCollection = collection(db, "attendance");
 
   useEffect(() => {
@@ -132,9 +135,15 @@ export default function AttendancePage() {
     e.target.value = "";
   };
 
-  const filteredChildren = children
-    .filter(c => c.name.toLowerCase().includes(search.toLowerCase()))
-    .sort((a, b) => a.name.localeCompare(b.name, "ar"));
+  const filteredChildren = useMemo(() => 
+    children
+      .filter(c => c.name.toLowerCase().includes(search.toLowerCase()))
+      .sort((a, b) => a.name.localeCompare(b.name, "ar")),
+    [children, search]
+  );
+
+  const totalPages = Math.ceil(filteredChildren.length / rowsPerPage);
+  const currentData = filteredChildren.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
 
   return (
     <div className="min-h-screen p-6 bg-[url('/church-bg.jpg')] bg-cover bg-center bg-fixed">
@@ -146,7 +155,7 @@ export default function AttendancePage() {
             type="text"
             placeholder="ابحث عن اسم الطفل..."
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={e => { setSearch(e.target.value); setCurrentPage(1); }}
             className="p-2 border rounded-xl w-full md:w-auto flex-grow"
           />
           <input
@@ -186,11 +195,12 @@ export default function AttendancePage() {
               </tr>
             </thead>
             <tbody>
-              {filteredChildren.map((child, idx) => {
+              {currentData.map((child, idx) => {
                 const dayData = child.days[selectedDate] || { present: false, absent: false };
+                const realIndex = (currentPage - 1) * rowsPerPage + idx;
                 return (
                   <tr key={child.id} className="even:bg-gray-100 hover:bg-gray-200 transition">
-                    <td className="p-3">{idx + 1}</td>
+                    <td className="p-3">{realIndex + 1}</td>
                     <td className="p-3 text-left">{child.name}</td>
                     <td className="p-3">
                       <input
@@ -222,6 +232,26 @@ export default function AttendancePage() {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination */}
+        <div className="flex justify-center items-center mt-4 gap-2">
+          <button
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage(prev => prev - 1)}
+            className="px-3 py-1 bg-gray-300 rounded hover:bg-gray-400 disabled:opacity-50"
+          >
+            السابق
+          </button>
+          <span>الصفحة {currentPage} من {totalPages}</span>
+          <button
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage(prev => prev + 1)}
+            className="px-3 py-1 bg-gray-300 rounded hover:bg-gray-400 disabled:opacity-50"
+          >
+            التالي
+          </button>
+        </div>
+
       </div>
     </div>
   );
