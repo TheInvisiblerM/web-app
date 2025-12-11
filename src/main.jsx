@@ -3,50 +3,38 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import './index.css';
 
-// إنشاء الجذر
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(
+// Render the App
+ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <App />
   </React.StrictMode>
 );
 
-// تسجيل Service Worker بعد تحميل الصفحة
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
-      .then(registration => {
-        console.log('SW registered: ', registration);
-      })
-      .catch(err => {
-        console.error('SW registration failed: ', err);
-      });
-  });
+// Register Service Worker
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/sw.js");
 }
 
-// ---- PWA Install Handling ----
-let deferredPrompt = null;
+// ---- PWA Install Button Event ----
+let deferredPrompt;
 
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault(); // منع نافذة التثبيت التلقائي
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
   deferredPrompt = e;
 
-  // اظهار زر التثبيت إذا موجود
-  const installBtn = document.getElementById('install-btn');
-  if (installBtn) installBtn.style.display = 'block';
+  const installBtn = document.getElementById("install-btn");
+  if (installBtn) installBtn.style.display = "block";
 });
 
-window.addEventListener('appinstalled', () => {
-  console.log('PWA was installed');
-  const installBtn = document.getElementById('install-btn');
-  if (installBtn) installBtn.style.display = 'none';
+window.addEventListener("appinstalled", () => {
+  const installBtn = document.getElementById("install-btn");
+  if (installBtn) installBtn.style.display = "none";
 });
 
-// دالة لتفعيل التثبيت عند الضغط على الزر
+// Trigger Install
 window.installPWA = async () => {
   if (!deferredPrompt) return;
   deferredPrompt.prompt();
-  const choiceResult = await deferredPrompt.userChoice;
-  console.log(`User choice: ${choiceResult.outcome}`);
+  const choice = await deferredPrompt.userChoice;
   deferredPrompt = null;
 };
