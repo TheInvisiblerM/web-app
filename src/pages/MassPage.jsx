@@ -11,7 +11,7 @@ export default function MassPage() {
   const [newChildName, setNewChildName] = useState("");
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const rowsPerPage = 20; // عدد الصفوف لكل صفحة
+  const rowsPerPage = 20;
 
   const massCollection = collection(db, "mass");
 
@@ -135,20 +135,18 @@ export default function MassPage() {
     e.target.value = "";
   };
 
-  // فلترة وترتيب البيانات
   const filteredChildren = children
     .filter(c => c.name.toLowerCase().includes(search.toLowerCase()))
     .sort((a, b) => a.name.localeCompare(b.name, "ar"));
 
-  // حساب الصفوف اللي تظهر في الصفحة الحالية
   const indexOfLastRow = currentPage * rowsPerPage;
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
   const currentRows = filteredChildren.slice(indexOfFirstRow, indexOfLastRow);
   const totalPages = Math.ceil(filteredChildren.length / rowsPerPage);
 
   return (
-    <div className="min-h-screen p-6 bg-[url('/church-bg.jpg')] bg-cover bg-center bg-fixed">
-      <div className="backdrop-blur-md bg-white/90 p-6 rounded-2xl shadow-xl">
+    <div className="min-h-screen p-6">
+      <div className="bg-white p-6 rounded-2xl shadow-xl">
         <h1 className="text-2xl md:text-3xl font-semibold mb-4 text-center text-red-900">⛪ حضور الأطفال القداس</h1>
 
         <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
@@ -233,7 +231,6 @@ export default function MassPage() {
           </table>
         </div>
 
-        {/* Pagination Controls */}
         <div className="flex justify-center mt-4 gap-2">
           <button
             onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}

@@ -146,7 +146,7 @@ export default function AttendancePage() {
   const currentData = filteredChildren.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
 
   return (
-    <div className="min-h-screen p-6 bg-[url('/church-bg.jpg')] bg-cover bg-center bg-fixed">
+    <div className="min-h-screen p-6">
       <div className="backdrop-blur-md bg-white/90 p-6 rounded-2xl shadow-xl">
         <h1 className="text-2xl md:text-3xl font-semibold mb-4 text-center text-red-900">📘 حضور الأطفال لمدارس الأحد</h1>
 

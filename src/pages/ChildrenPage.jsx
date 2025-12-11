@@ -101,7 +101,6 @@ export default function ChildrenPage() {
     }
   };
 
-  // تحديث مباشر بدون debounce مع تأكيد المستخدم
   const handleReset = async () => {
     if (!window.confirm("⚠️ هل أنت متأكد من إعادة ضبط الزيارات لهذا الشهر؟")) return;
 
@@ -110,7 +109,7 @@ export default function ChildrenPage() {
       const newVisited = { ...r.visited, [selectedMonth]: false };
       try {
         const docRef = doc(db, "children", r.id);
-        await updateDoc(docRef, { visited: newVisited }); // حفظ مباشر
+        await updateDoc(docRef, { visited: newVisited });
       } catch (error) {
         console.error("خطأ في إعادة ضبط الزيارات:", error);
         alert("❌ فشل إعادة ضبط بعض الصفوف");
@@ -166,7 +165,7 @@ export default function ChildrenPage() {
   const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
 
   return (
-    <div className="min-h-screen p-6 bg-[url('/church-bg.jpg')] bg-cover bg-center bg-fixed">
+    <div className="min-h-screen p-6">
       <div className="backdrop-blur-md bg-white/80 p-6 rounded-2xl shadow-xl">
         <h1 className="text-3xl font-bold mb-4 text-center text-red-900">👼 إدارة بيانات الأطفال</h1>
 
@@ -234,7 +233,6 @@ export default function ChildrenPage() {
           </table>
         </div>
 
-        {/* Pagination Controls */}
         <div className="flex justify-center mt-4 gap-2">
           <button
             onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
