@@ -38,8 +38,8 @@ function Login() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
-      <Card className="relative w-full max-w-md shadow-2xl rounded-2xl p-4 backdrop-blur-md bg-white/80 z-10">
+    <div className="min-h-screen flex items-center justify-center bg-[url('/church-bg.jpg')] bg-cover bg-center relative">
+      <Card className="relative w-full max-w-md shadow-2xl rounded-2xl p-4 backdrop-blur-md bg-white/90 z-10">
         <CardContent>
           <h1 className="text-3xl font-bold mb-2 text-center text-red-900">
             ملائكة كنيسة السيدة العذراء – محرم بك
@@ -48,6 +48,7 @@ function Login() {
             تسجيل دخول المسؤول
           </h2>
           {error && <p className="text-center text-red-600 mb-2">{error}</p>}
+
           <div className="space-y-3">
             <input
               onChange={(e) => setUser(e.target.value)}
@@ -61,6 +62,7 @@ function Login() {
               className="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-red-400"
             />
           </div>
+
           <Button
             className="w-full mt-4 bg-red-600 hover:bg-red-700 transition-all duration-300 text-white rounded-xl py-3 font-semibold shadow-md"
             onClick={handleLogin}
@@ -78,7 +80,7 @@ function Login() {
 // -----------------------------
 function Dashboard() {
   return (
-    <div className="p-6 min-h-screen">
+    <div className="min-h-screen p-6">
       <div className="bg-white/80 p-6 rounded-2xl shadow-xl backdrop-blur-md">
         <h1 className="text-4xl font-bold mb-6 text-red-900 text-center">
           لوحة التحكم
@@ -164,16 +166,14 @@ function InstallButton() {
 export default function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-[url('/church-bg.jpg')] bg-cover bg-center relative">
-        <InstallButton />
-        <Routes>
-          <Route path="/" element={<Login />} />
-          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-          <Route path="/attendance" element={<ProtectedRoute><AttendancePage /></ProtectedRoute>} />
-          <Route path="/mass" element={<ProtectedRoute><MassPage /></ProtectedRoute>} />
-          <Route path="/children" element={<ProtectedRoute><ChildrenPage /></ProtectedRoute>} />
-        </Routes>
-      </div>
+      <InstallButton />
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/attendance" element={<ProtectedRoute><AttendancePage /></ProtectedRoute>} />
+        <Route path="/mass" element={<ProtectedRoute><MassPage /></ProtectedRoute>} />
+        <Route path="/children" element={<ProtectedRoute><ChildrenPage /></ProtectedRoute>} />
+      </Routes>
     </Router>
   );
 }
