@@ -11,7 +11,7 @@ root.render(
   </React.StrictMode>
 );
 
-// تسجيل Service Worker
+// تسجيل Service Worker بعد تحميل الصفحة
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
@@ -28,8 +28,7 @@ if ('serviceWorker' in navigator) {
 let deferredPrompt = null;
 
 window.addEventListener('beforeinstallprompt', (e) => {
-  // منع ظهور نافذة التثبيت التلقائي
-  e.preventDefault();
+  e.preventDefault(); // منع نافذة التثبيت التلقائي
   deferredPrompt = e;
 
   // اظهار زر التثبيت إذا موجود
@@ -37,7 +36,6 @@ window.addEventListener('beforeinstallprompt', (e) => {
   if (installBtn) installBtn.style.display = 'block';
 });
 
-// عند تثبيت التطبيق
 window.addEventListener('appinstalled', () => {
   console.log('PWA was installed');
   const installBtn = document.getElementById('install-btn');
@@ -49,10 +47,6 @@ window.installPWA = async () => {
   if (!deferredPrompt) return;
   deferredPrompt.prompt();
   const choiceResult = await deferredPrompt.userChoice;
-  if (choiceResult.outcome === 'accepted') {
-    console.log('User accepted the install prompt');
-  } else {
-    console.log('User dismissed the install prompt');
-  }
+  console.log(`User choice: ${choiceResult.outcome}`);
   deferredPrompt = null;
 };
