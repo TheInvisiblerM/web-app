@@ -10,6 +10,9 @@ export default function MassPage() {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0]);
   const [newChildName, setNewChildName] = useState("");
   const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const rowsPerPage = 20; // عدد الصفوف لكل صفحة
+
   const massCollection = collection(db, "mass");
 
   useEffect(() => {
@@ -132,14 +135,21 @@ export default function MassPage() {
     e.target.value = "";
   };
 
+  // فلترة وترتيب البيانات
   const filteredChildren = children
     .filter(c => c.name.toLowerCase().includes(search.toLowerCase()))
     .sort((a, b) => a.name.localeCompare(b.name, "ar"));
 
+  // حساب الصفوف اللي تظهر في الصفحة الحالية
+  const indexOfLastRow = currentPage * rowsPerPage;
+  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+  const currentRows = filteredChildren.slice(indexOfFirstRow, indexOfLastRow);
+  const totalPages = Math.ceil(filteredChildren.length / rowsPerPage);
+
   return (
     <div className="min-h-screen p-6 bg-[url('/church-bg.jpg')] bg-cover bg-center bg-fixed">
       <div className="backdrop-blur-md bg-white/90 p-6 rounded-2xl shadow-xl">
-        <h1 className="text-2xl md:text-3xl font-semibold mb-4 text-center text-red-900">📘 حضور الأطفال لمدارس الأحد</h1>
+        <h1 className="text-2xl md:text-3xl font-semibold mb-4 text-center text-red-900">⛪ حضور الأطفال القداس</h1>
 
         <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
           <input
@@ -186,11 +196,11 @@ export default function MassPage() {
               </tr>
             </thead>
             <tbody>
-              {filteredChildren.map((child, idx) => {
+              {currentRows.map((child, idx) => {
                 const dayData = child.days[selectedDate] || { present: false, absent: false };
                 return (
                   <tr key={child.id} className="even:bg-gray-100 hover:bg-gray-200 transition">
-                    <td className="p-3">{idx + 1}</td>
+                    <td className="p-3">{indexOfFirstRow + idx + 1}</td>
                     <td className="p-3 text-left">{child.name}</td>
                     <td className="p-3">
                       <input
@@ -222,6 +232,28 @@ export default function MassPage() {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination Controls */}
+        <div className="flex justify-center mt-4 gap-2">
+          <button
+            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+            className="px-3 py-1 bg-gray-300 rounded hover:bg-gray-400 transition"
+            disabled={currentPage === 1}
+          >
+            السابق
+          </button>
+          <span className="px-3 py-1 bg-gray-200 rounded">
+            {currentPage} / {totalPages}
+          </span>
+          <button
+            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+            className="px-3 py-1 bg-gray-300 rounded hover:bg-gray-400 transition"
+            disabled={currentPage === totalPages}
+          >
+            التالي
+          </button>
+        </div>
+
       </div>
     </div>
   );
