@@ -20,30 +20,11 @@ function ProtectedRoute({ children }) {
   return isLogged ? children : <Navigate to="/" />;
 }
 
-// Login
+// Login Page
 function Login() {
   const [user, setUser] = useState("");
   const [pass, setPass] = useState("");
   const [error, setError] = useState("");
-  const [deferredPrompt, setDeferredPrompt] = useState(null);
-
-  useEffect(() => {
-    window.addEventListener("beforeinstallprompt", (e) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-    });
-  }, []);
-
-  const handleInstall = () => {
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      deferredPrompt.userChoice.then(() => {
-        setDeferredPrompt(null);
-      });
-    } else {
-      alert("التثبيت غير متاح الآن.");
-    }
-  };
 
   function handleLogin() {
     if (user === AUTH_USERNAME && pass === AUTH_PASSWORD) {
@@ -55,10 +36,8 @@ function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[url('/church-bg.jpg')] bg-cover bg-center relative">
-      <div className="absolute inset-0 bg-black/40"></div>
-
-      <Card className="relative w-full max-w-md shadow-2xl rounded-2xl p-4 backdrop-blur-md bg-white/70 z-10">
+    <div className="min-h-screen flex items-center justify-center relative">
+      <Card className="relative w-full max-w-md shadow-2xl rounded-2xl p-4 backdrop-blur-md bg-white/90 z-10">
         <CardContent>
           <h1 className="text-3xl font-bold mb-2 text-center text-red-900">
             ملائكة كنيسة السيدة العذراء – محرم بك
@@ -67,7 +46,6 @@ function Login() {
             تسجيل دخول المسؤول
           </h2>
           {error && <p className="text-center text-red-600 mb-2">{error}</p>}
-
           <div className="space-y-3">
             <input
               onChange={(e) => setUser(e.target.value)}
@@ -81,30 +59,22 @@ function Login() {
               className="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-red-400"
             />
           </div>
-
           <Button
             className="w-full mt-4 bg-red-600 hover:bg-red-700 transition-all duration-300 text-white rounded-xl py-3 font-semibold shadow-md"
             onClick={handleLogin}
           >
             تسجيل الدخول
           </Button>
-
-          <button
-            onClick={handleInstall}
-            className="w-full mt-4 bg-blue-600 hover:bg-blue-700 transition-all duration-300 text-white rounded-xl py-3 font-semibold shadow-md"
-          >
-            ➕ تثبيت التطبيق على الجهاز
-          </button>
         </CardContent>
       </Card>
     </div>
   );
 }
 
-// Dashboard
+// Dashboard Page
 function Dashboard() {
   return (
-    <div className="min-h-screen p-6 bg-[url('/church-bg.jpg')] bg-cover bg-center">
+    <div className="min-h-screen p-6">
       <div className="bg-white/80 p-6 rounded-2xl shadow-xl backdrop-blur-md">
         <h1 className="text-4xl font-bold mb-6 text-red-900 text-center">
           لوحة التحكم
@@ -137,10 +107,56 @@ function Dashboard() {
   );
 }
 
-// App
+// PWA Install Button Component
+function InstallButton() {
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [showButton, setShowButton] = useState(false);
+
+  useEffect(() => {
+    const handler = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setShowButton(true);
+    };
+    window.addEventListener("beforeinstallprompt", handler);
+
+    const installedHandler = () => {
+      setShowButton(false);
+      setDeferredPrompt(null);
+    };
+    window.addEventListener("appinstalled", installedHandler);
+
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handler);
+      window.removeEventListener("appinstalled", installedHandler);
+    };
+  }, []);
+
+  const handleInstall = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    setDeferredPrompt(null);
+    setShowButton(false);
+  };
+
+  if (!showButton) return null;
+
+  return (
+    <button
+      onClick={handleInstall}
+      className="fixed bottom-4 right-4 px-4 py-2 bg-red-600 text-white rounded-xl shadow-lg z-50"
+    >
+      ➕ تثبيت التطبيق
+    </button>
+  );
+}
+
+// App Component
 export default function App() {
   return (
     <Router>
+      <InstallButton />
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
