@@ -1,5 +1,5 @@
 {
-  "name": "vite-vercel-app",
+  "name": "church-app",
   "version": "1.0.0",
   "scripts": {
     "dev": "vite",
@@ -7,17 +7,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@tanstack/react-virtual": "^3.13.13",
-    "build": "^0.1.4",
     "firebase": "^12.6.0",
     "lodash": "^4.17.21",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
-    "react-router-dom": "^6.22.0",
-    "react-virtualized-auto-sizer": "^1.0.26",
-    "react-window": "^2.2.3",
-    "sharp": "^0.34.5",
-    "xlsx": "^0.18.5"
+    "react-router-dom": "^6.22.0"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.0.0",
